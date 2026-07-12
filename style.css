@@ -2144,38 +2144,59 @@ footer {
     padding-top: 16px;
 }
 
+.image-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 12px;
+}
+
 .model-image-section h4 {
-    margin-bottom: 10px;
+    margin-bottom: 0;
 }
 
-/* ドラッグ＆ドロップ領域 */
-.image-upload-zone {
-    border: 2px dashed rgba(63, 81, 181, 0.2);
-    background: rgba(63, 81, 181, 0.01);
-    border-radius: 10px;
-    padding: 18px 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: var(--transition);
-    user-select: none;
-    margin-bottom: 16px;
-}
-
-.image-upload-zone:hover {
-    background: rgba(63, 81, 181, 0.03);
-    border-color: #3F51B5;
-}
-
-.image-upload-zone.dragover {
-    background: rgba(63, 81, 181, 0.06);
-    border-color: #303F9F;
-    transform: scale(1.01);
-}
-
-.image-upload-zone span {
+/* 画像追加ボタン（枠付き＋内側カラー） */
+.add-image-btn {
+    border: 1.5px solid #3F51B5 !important;
+    background: #E8EAF6 !important;
+    color: #3F51B5 !important;
+    padding: 3px 10px !important;
+    font-family: inherit;
     font-size: 10px;
     font-weight: 800;
-    color: #3F51B5;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.add-image-btn:hover {
+    background: #C5CAE9 !important;
+    color: #1A237E !important;
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(63, 81, 181, 0.15);
+}
+
+.add-image-btn:active {
+    transform: scale(0.98);
+}
+
+/* ダークテーマ時の画像追加ボタン */
+.dark-theme .add-image-btn {
+    border-color: #5C6BC0 !important;
+    background-color: rgba(92, 107, 192, 0.15) !important;
+    color: #9FA8DA !important;
+}
+
+.dark-theme .add-image-btn:hover {
+    background-color: rgba(92, 107, 192, 0.3) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(92, 107, 192, 0.3) !important;
 }
 
 /* ギャラリーグリッド */

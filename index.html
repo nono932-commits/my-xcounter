@@ -185,11 +185,11 @@
 
                         <!-- 画像保管セクション -->
                         <div class="model-image-section">
-                            <h4>📸 解析画像・スクリーンショット保管庫</h4>
-                            <div class="image-upload-zone" id="image-upload-zone" onclick="triggerFileSelect()">
-                                <span>📸 ここに画像をドラッグ＆ドロップするか、クリックしてアップロード（複数選択可）</span>
-                                <input type="file" id="image-file-input" accept="image/*" multiple onchange="handleImageUpload(event)" style="display: none;">
+                            <div class="image-section-header">
+                                <h4>📸 画像・スクリーンショット保管庫</h4>
+                                <button class="add-image-btn" onclick="triggerFileSelect()">画像追加</button>
                             </div>
+                            <input type="file" id="image-file-input" accept="image/*" multiple onchange="handleImageUpload(event)" style="display: none;">
                             <!-- 画像一覧グリッド -->
                             <div class="image-gallery-grid" id="image-gallery-grid">
                                 <!-- JSで動的に画像カードが生成されます -->
