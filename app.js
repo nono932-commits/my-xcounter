@@ -1582,7 +1582,7 @@ function renderCounters() {
         card.addEventListener('touchstart', (e) => {
             if (!isEditMode) return;
             // 🎨 や 🎵 や 削除ボタンの上でのタッチ時はドラッグを開始しない（誤操作防止）
-            if (e.target.closest('.card-delete-btn') || e.target.closest('.color-select') || e.target.closest('.sound-select-wrapper')) {
+            if (e.target.closest('.card-delete-btn') || e.target.closest('.color-select') || e.target.closest('.sound-select-wrapper') || e.target.tagName === 'SELECT' || e.target.closest('select')) {
                 return;
             }
             card.classList.add('dragging');
@@ -1594,7 +1594,7 @@ function renderCounters() {
         }, { passive: true });
 
         card.addEventListener('touchmove', (e) => {
-            if (!isEditMode) return;
+            if (!isEditMode || !card.classList.contains('dragging')) return;
             // 入れ替えのタッチ操作時に画面スクロールを完全に防止して固定する
             if (e.cancelable) {
                 e.preventDefault();
@@ -1615,8 +1615,8 @@ function renderCounters() {
             }
         }, { passive: false });
 
-        card.addEventListener('touchend', () => {
-            if (!isEditMode) return;
+        card.addEventListener('touchend', (e) => {
+            if (!isEditMode || !card.classList.contains('dragging')) return;
             card.classList.remove('dragging');
             card.style.opacity = '1';
             const grid = document.getElementById('counters-grid');
@@ -1659,6 +1659,8 @@ function renderCounters() {
             colorSelect.title = 'ボタンの色を変更';
             colorSelect.style.display = isEditMode ? 'inline-flex' : 'none';
             colorSelect.onclick = (e) => e.stopPropagation();
+            colorSelect.ontouchstart = (e) => e.stopPropagation();
+            colorSelect.ontouchend = (e) => e.stopPropagation();
             colorSelect.onchange = (e) => {
                 if (e.target.value) {
                     updateCounterColor(c.id, e.target.value);
@@ -1711,6 +1713,9 @@ function renderCounters() {
             soundWrapper.style.justifyContent = 'center';
             soundWrapper.style.cursor = 'pointer';
             soundWrapper.style.transition = 'var(--transition)';
+            soundWrapper.onclick = (e) => e.stopPropagation();
+            soundWrapper.ontouchstart = (e) => e.stopPropagation();
+            soundWrapper.ontouchend = (e) => e.stopPropagation();
             
             const noteIcon = document.createElement('span');
             noteIcon.className = 'sound-note-icon';
@@ -1724,6 +1729,8 @@ function renderCounters() {
             soundSelect.className = 'sound-select';
             soundSelect.title = '加算時の効果音を変更';
             soundSelect.onclick = (e) => e.stopPropagation();
+            soundSelect.ontouchstart = (e) => e.stopPropagation();
+            soundSelect.ontouchend = (e) => e.stopPropagation();
             soundSelect.style.position = 'absolute';
             soundSelect.style.top = '0';
             soundSelect.style.left = '0';
