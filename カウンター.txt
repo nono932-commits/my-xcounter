@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>小役カウンター</title>
+    <style>
+        /* スタイルは簡略化のためここに記述します */
+        body { font-family: sans-serif; padding: 20px; }
+        .counter-group { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
+        .count-display { font-size: 24px; font-weight: bold; margin: 5px 0; }
+        button { padding: 10px 15px; margin-right: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h1>🎰 パチスロ小役カウンター</h1>
+
+    <div class="counter-group">
+        <h2>総ゲーム数 (分母)</h2>
+        <div id="total-games" class="count-display">0 G</div>
+        <button onclick="addGame(100)">+ 100 G</button>
+        <button onclick="addGame(10)">+ 10 G</button>
+        <button onclick="addGame(1)">+ 1 G</button>
+    </div>
+
+    <hr>
+
+    <div class="counter-group">
+        <h3>🔔 ベル</h3>
+        <div id="bell-count" class="count-display">0 回</div>
+        <div id="bell-rate">出現率: -</div>
+        <button onclick="countUp('bell')">ベル + 1</button>
+    </div>
+
+    <div class="counter-group">
+        <h3>🍉 スイカ</h3>
+        <div id="suika-count" class="count-display">0 回</div>
+        <div id="suika-rate">出現率: -</div>
+        <button onclick="countUp('suika')">スイカ + 1</button>
+    </div>
+
+    <button onclick="resetAll()">すべてリセット</button>
+
+    <script>
+        // JavaScriptコードはここに記述します
+        let totalGames = 0;
+        const counts = {
+            bell: 0,
+            suika: 0
+            // 必要に応じて他の小役を追加
+        };
+
+        // 総ゲーム数を更新し、再計算する関数
+        function addGame(amount) {
+            totalGames += amount;
+            document.getElementById('total-games').textContent = `${totalGames} G`;
+            updateRates();
+        }
+
+        // 小役のカウントを増やし、再計算する関数
+        function countUp(name) {
+            counts[name]++;
+            document.getElementById(`${name}-count`).textContent = `${counts[name]} 回`;
+            updateRates();
+        }
+
+        // 出現率を計算し、表示を更新する関数
+        function updateRates() {
+            for (const name in counts) {
+                let rateText = '-';
+                if (totalGames > 0) {
+                    // 出現率を 1/N 形式で表示
+                    const rate = totalGames / counts[name];
+                    rateText = `出現率: 1/${rate.toFixed(2)}`;
+                }
+                document.getElementById(`${name}-rate`).textContent = rateText;
+            }
+        }
+
+        // 全てをリセットする関数
+        function resetAll() {
+            if (confirm('全てのカウントとゲーム数をリセットしてもよろしいですか？')) {
+                totalGames = 0;
+                for (const name in counts) {
+                    counts[name] = 0;
+                }
+                document.getElementById('total-games').textContent = '0 G';
+                document.getElementById('bell-count').textContent = '0 回';
+                document.getElementById('suika-count').textContent = '0 回';
+                updateRates();
+            }
+        }
+    </script>
+</body>
+</html>
