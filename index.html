@@ -64,6 +64,7 @@
                 <div class="counters-section-header-actions">
                     <button id="count-mode-plus-btn" class="quick-action-btn add active" onclick="setCountMode('plus')" title="加算モード（＋）">＋</button>
                     <button id="count-mode-minus-btn" class="quick-action-btn sub" onclick="setCountMode('minus')" title="減算モード（－）">－</button>
+                    <button id="count-clear-btn" class="quick-action-btn clear" onclick="clearAllCountersCount()" title="小役カウントをクリア（ゲーム数除く）">🧹</button>
                     <button id="edit-mode-toggle-btn" class="edit-mode-toggle-btn" onclick="toggleEditMode()" title="ボタン編集モードを切り替え">
                         <span class="edit-btn-icon">✏️</span>
                         <span class="edit-btn-text">ボタン編集</span>
@@ -87,10 +88,10 @@
                         <!-- JSで動的に追加されます -->
                     </select>
                     <button id="save-model-btn" class="preset-action-btn save" onclick="saveCurrentModelAsPreset()" title="現在の構成を新規機種として保存">
-                        💾
+                        💾 保存
                     </button>
                     <button id="delete-model-btn" class="preset-action-btn delete" onclick="deleteCurrentModelPreset()" title="この機種設定を削除" disabled>
-                        🗑️
+                        🗑️ 削除
                     </button>
                 </div>
             </div>
@@ -99,6 +100,7 @@
                 <div class="accordion-content">
                     <!-- 推測結果のバー表示 -->
                     <div class="estimation-results">
+                        <h3 class="estimation-sub-title">総合設定推測</h3>
                         <div class="result-row" id="result-s1">
                             <span class="setting-label">設定1</span>
                             <div class="progress-bar-container">
@@ -143,11 +145,19 @@
                         </div>
                     </div>
 
+                    <!-- 小役別設定推測結果 -->
+                    <div id="individual-estimations-container" class="individual-estimations-container"></div>
+
                     <!-- 設定差データの詳細・編集用アコーディオン -->
                     <details class="model-details">
                         <summary>設定差（出現率分母）の確認・編集</summary>
                         <div class="model-table-container">
-                            <p class="table-info">※数値を変更すると「カスタム」として反映されます（0または空欄は推測の計算から除外されます）。</p>
+                            <div class="table-header-controls">
+                                <p class="table-info">空欄の小役は設定推測から除外されます</p>
+                                <button id="clear-model-table-btn" class="table-clear-btn" onclick="clearModelTableDenominators()" title="設定差テーブルの数値をすべて消去します">
+                                    🧹 設定差をクリア
+                                </button>
+                            </div>
                             <!-- 使用設定段階の選択トグル -->
                             <div id="active-settings-control" class="active-settings-control"></div>
 
@@ -272,11 +282,18 @@
 
         <!-- グローバル操作エリア -->
         <footer>
-            <button class="reset-btn" onclick="resetAll()">
+            <button class="backup-btn" onclick="exportBackup()" title="現在の全データをJSONファイルとしてエクスポートします">
+                <span>📥 バックアップ</span>
+            </button>
+            <button class="restore-btn" onclick="triggerRestoreSelect()" title="保存したJSONファイルを読み込んでデータを復元します">
+                <span>📤 復元</span>
+            </button>
+            <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="importBackup(event)">
+            <button class="reset-btn" onclick="resetAll()" title="すべてのデータをリセットします">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
                     <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
                 </svg>
-                <span>すべてリセット</span>
+                <span>リセット</span>
             </button>
         </footer>
     </div>

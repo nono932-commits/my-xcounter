@@ -367,9 +367,9 @@ let isVibrateActive = true;
 
 // カウンター追加時のデフォルト絵文字プール（空文字はアイコンなし）
 const SYMBOL_POOL = [
-    '', '🔔', '🍒', '🍉', '🍇', '🍋', '🍊', '🍑', '🍍', '🍈', 
-    '✨', '🎰', '🪙', '💰', '💎', '👑', '7️⃣', '💥', '🔥', '⚡', 
-    '🌈', '🌟', '⭐', '🍀', '🎯', '🎲', '👾', '💀', '❓'
+    '', '🔔', '🔔🔔', '🍒', '🍒🍒', '🍉', '🍉🍉', '🍇', '🍇🍇', '🍋', '🍊', '🍑', '🍍', '🍈', 
+    '✨', '🎰', '🎰🎰', '🪙', '🪙🪙', '💰', '💎', '👑', '👑👑', '7️⃣', '7️⃣7️⃣', '💥', '💥💥', '🔥', '⚡', 
+    '🌈', '🌟', '🌟🌟', '⭐', '⭐⭐', '🍀', '🎯', '🎲', '👾', '💀', '❓'
 ];
 
 // 小役の基本デフォルトデータ
@@ -394,7 +394,7 @@ const DEFAULT_GAME_ITEMS = [
 // --- 機種プリセットの設定差データ ---
 const MODEL_PRESETS = {
     custom: {
-        name: '新規作成',
+        name: 'デフォルト',
         denominators: {} // 動的に割り当て
     }
 };
@@ -1058,7 +1058,7 @@ function toggleSettingEnabled(index, checked) {
 
     enabledSettings[index] = checked;
     
-    switchToCustomMode();
+    // switchToCustomMode();
     saveCurrentModeState();
     saveData();
 
@@ -1426,6 +1426,17 @@ function countUp(id, amount) {
 
 // --- 機種の切り替え ---
 function handleModelChange(value) {
+    // デフォルト（custom）から他の機種へ変更する際、確認警告を出す
+    if (currentModelKey === 'custom' && value !== 'custom') {
+        if (!confirm('機種を変更すると、デフォルト状態で編集した保存されていない数値は消えてしまいます。よろしいですか？')) {
+            // キャンセルされた場合はセレクトボックスの選択を「デフォルト」に戻して処理を中断
+            if (modelSelect) {
+                modelSelect.value = 'custom';
+            }
+            return;
+        }
+    }
+
     disableEditMode();
     currentModelKey = value;
 
@@ -1475,25 +1486,44 @@ function handleModelChange(value) {
     loadModelMemoAndGallery();
 }
 
-// --- 機種の新規保存アクション ---
+// --- 機種の保存アクション（上書き保存・新規保存） ---
 function saveCurrentModelAsPreset() {
-    const presetName = prompt('現在のすべての状態タブの構成と設定差を新規機種として保存します。\n機種名を入力してください：');
-    if (!presetName || !presetName.trim()) return;
+    // ユーザー保存機種（user-preset-で始まるキー）が選択されている場合は上書き保存
+    if (currentModelKey.startsWith('user-preset-')) {
+        const preset = userPresets[currentModelKey];
+        if (!preset) return;
 
-    saveCurrentModeState();
+        if (confirm(`現在の構成で機種「${preset.name}」を上書き保存しますか？`)) {
+            saveCurrentModeState();
+            
+            preset.presetModeData = JSON.parse(JSON.stringify(modes));
+            preset.enabledSettings = JSON.parse(JSON.stringify(enabledSettings));
+            
+            saveData();
+            alert(`機種「${preset.name}」を上書き保存しました。`);
+            updateUI();
+        }
+    } else {
+        // デフォルトまたはシステムプリセットの場合は新規機種として保存
+        const presetName = prompt('現在の構成を新規機種として保存します。\n機種名を入力してください：');
+        if (!presetName || !presetName.trim()) return;
 
-    const presetId = 'user-preset-' + Date.now().toString();
-    userPresets[presetId] = {
-        name: presetName.trim(),
-        presetModeData: JSON.parse(JSON.stringify(modes)),
-        enabledSettings: JSON.parse(JSON.stringify(enabledSettings))
-    };
+        saveCurrentModeState();
 
-    currentModelKey = presetId;
-    saveData();
-    
-    renderModelOptions();
-    handleModelChange(presetId);
+        const presetId = 'user-preset-' + Date.now().toString();
+        userPresets[presetId] = {
+            name: presetName.trim(),
+            presetModeData: JSON.parse(JSON.stringify(modes)),
+            enabledSettings: JSON.parse(JSON.stringify(enabledSettings))
+        };
+
+        currentModelKey = presetId;
+        saveData();
+        
+        renderModelOptions();
+        handleModelChange(presetId);
+        alert(`新規機種「${presetName.trim()}」として保存しました。`);
+    }
 }
 
 // --- 機種の削除アクション ---
@@ -1762,6 +1792,24 @@ function renderCounters() {
         };
         card.appendChild(deleteBtn);
 
+        // useInEstimation が定義されていない場合は明示的に true (除外しない) で初期化
+        if (c.useInEstimation === undefined || c.useInEstimation === null) {
+            c.useInEstimation = true;
+        }
+
+        // 設定推測から除外されている場合はカードにクラスを付与してCSSで制御
+        if (c.useInEstimation === false) {
+            card.classList.add('is-excluded');
+        }
+
+        // 設定推測から除外されていることを示すバッジマーク（🚫）の生成（カード本体の直下に追加してスマホ等での包含ブロックのバグを防止）
+        const excludeBadge = document.createElement('span');
+        excludeBadge.id = `${c.id}-exclude-badge`;
+        excludeBadge.className = 'exclude-badge';
+        excludeBadge.textContent = '🚫';
+        excludeBadge.title = '設定推測から除外されています';
+        card.appendChild(excludeBadge);
+
         const header = document.createElement('div');
         header.className = 'card-header';
         
@@ -1996,24 +2044,6 @@ function renderCounters() {
             const leftContainer = document.createElement('div');
             leftContainer.className = 'count-left-container';
 
-            // useInEstimation が定義されていない場合は明示的に true (除外しない) で初期化
-            if (c.useInEstimation === undefined || c.useInEstimation === null) {
-                c.useInEstimation = true;
-            }
-
-            // 設定推測から除外されている場合はカードにクラスを付与してCSSで制御
-            if (c.useInEstimation === false) {
-                card.classList.add('is-excluded');
-            }
-
-            // 設定推測から除外されていることを示すバッジマーク（🚫）の生成
-            const excludeBadge = document.createElement('span');
-            excludeBadge.id = `${c.id}-exclude-badge`;
-            excludeBadge.className = 'exclude-badge';
-            excludeBadge.textContent = '🚫';
-            excludeBadge.title = '設定推測から除外されています';
-            leftContainer.appendChild(excludeBadge);
-
             const numSpan = document.createElement('span');
             numSpan.id = `${c.id}-count`;
             numSpan.className = 'digital-number';
@@ -2186,7 +2216,7 @@ function generateModelTable() {
                 row.classList.add('excluded-row');
             }
             
-            switchToCustomMode();
+            // switchToCustomMode();
             saveCurrentModeState();
             saveData();
             updateUI();
@@ -2231,7 +2261,7 @@ function generateModelTable() {
                     const val = parseFloat(e.target.value);
                     c.denominators[s] = isNaN(val) || val <= 0 ? 0 : val;
                     
-                    switchToCustomMode();
+                    // switchToCustomMode();
                     saveCurrentModeState();
                     saveData();
                     updateUI();
@@ -2341,6 +2371,77 @@ function calculateEstimation() {
     return expLikelihoods.map(l => (l / sumLikelihoods) * 100);
 }
 
+// --- 設定推測（小役個別ベイズ推定）の計算 ---
+function calculateIndividualEstimation(counterId) {
+    const logLikelihoods = [0, 0, 0, 0, 0, 0];
+    let hasValidData = false;
+
+    modes.forEach(m => {
+        const N_default = m.totalGames;
+        if (N_default <= 0 && !m.counters.some(x => x.isRate)) return;
+
+        const c = m.counters.find(x => x.id === counterId);
+        if (!c || c.useInEstimation === false) return;
+
+        let k = c.count;
+        let N = N_default;
+
+        if (c.isRate) {
+            const denomCounter = m.counters.find(x => x.id === c.rateDenominatorId);
+            const numerCounter = m.counters.find(x => x.id === c.rateNumeratorId);
+            const denomCount = denomCounter ? denomCounter.count : 0;
+            const numerCount = numerCounter ? numerCounter.count : 0;
+            
+            k = numerCount;
+            N = denomCount;
+        }
+
+        if (N <= 0) return;
+
+        for (let s = 0; s < 6; s++) {
+            if (enabledSettings[s]) {
+                const denom = c.denominators[s];
+                
+                if (denom > 0) {
+                    hasValidData = true;
+                    const p = c.isRate ? denom / 100 : 1 / denom;
+                    
+                    let logL = 0;
+                    if (p > 0 && p < 1) {
+                        const safeP = Math.max(0.00001, Math.min(0.99999, p));
+                        logL = k * Math.log(safeP) + (N - k) * Math.log(1 - safeP);
+                    }
+                    logLikelihoods[s] += logL;
+                }
+            }
+        }
+    });
+
+    if (!hasValidData) {
+        const activeCount = enabledSettings.filter(v => v).length;
+        const uniformVal = 100 / activeCount;
+        return enabledSettings.map(v => v ? uniformVal : 0);
+    }
+
+    const activeLogL = logLikelihoods.filter((_, s) => enabledSettings[s]);
+    const maxLogL = Math.max(...activeLogL);
+    
+    const expLikelihoods = logLikelihoods.map((l, s) => {
+        if (!enabledSettings[s]) return 0;
+        return Math.exp(l - maxLogL);
+    });
+
+    const sumLikelihoods = expLikelihoods.reduce((a, b) => a + b, 0);
+
+    if (sumLikelihoods === 0) {
+        const activeCount = enabledSettings.filter(v => v).length;
+        const uniformVal = 100 / activeCount;
+        return enabledSettings.map(v => v ? uniformVal : 0);
+    }
+
+    return expLikelihoods.map(l => (l / sumLikelihoods) * 100);
+}
+
 // --- UIの全体的な更新 ---
 function updateUI() {
     updateDisplay();
@@ -2376,6 +2477,90 @@ function updateUI() {
                 row.style.display = 'none';
                 row.classList.remove('highlight');
             }
+        }
+    }
+
+    // 小役個別設定推測の描画
+    const indivContainer = document.getElementById('individual-estimations-container');
+    if (indivContainer) {
+        indivContainer.innerHTML = '';
+        
+        // 推測に有効な小役だけをリストアップ（合算や当選率も含める）
+        const validCounters = counters.filter(c => c.useInEstimation !== false);
+        
+        if (validCounters.length > 0) {
+            // アコーディオン全体の生成
+            const details = document.createElement('details');
+            details.className = 'indiv-est-details';
+            
+            const summary = document.createElement('summary');
+            summary.className = 'indiv-est-summary';
+            summary.textContent = '小役別設定推測';
+            details.appendChild(summary);
+            
+            const content = document.createElement('div');
+            content.className = 'indiv-est-content';
+            
+            validCounters.forEach(c => {
+                const block = document.createElement('div');
+                block.className = 'indiv-est-block';
+                
+                const title = document.createElement('div');
+                title.className = 'indiv-est-block-title';
+                title.textContent = `${c.symbol || ''} ${c.name}`;
+                title.title = `${c.symbol || ''} ${c.name}`;
+                block.appendChild(title);
+                
+                // その小役の個別推定確率を計算
+                const probs = calculateIndividualEstimation(c.id);
+                const activeProbs = probs.filter((_, s) => enabledSettings[s]);
+                const maxProb = Math.max(...activeProbs);
+                
+                for (let s = 0; s < 6; s++) {
+                    const row = document.createElement('div');
+                    row.className = 'indiv-result-row';
+                    
+                    const isEnabled = enabledSettings[s];
+                    if (!isEnabled) {
+                        row.classList.add('is-disabled');
+                    }
+                    
+                    const label = document.createElement('span');
+                    label.className = 'indiv-setting-label';
+                    label.textContent = `${s+1}`;
+                    row.appendChild(label);
+                    
+                    const progressContainer = document.createElement('div');
+                    progressContainer.className = 'indiv-progress-container';
+                    
+                    const progressBar = document.createElement('div');
+                    progressBar.className = 'indiv-progress-bar';
+                    
+                    const prob = probs[s];
+                    if (isEnabled) {
+                        progressBar.style.width = prob + '%';
+                        if (prob === maxProb && maxProb > (100 / enabledSettings.filter(v => v).length)) {
+                            row.classList.add('highlight');
+                        }
+                    } else {
+                        progressBar.style.width = '0%';
+                    }
+                    progressContainer.appendChild(progressBar);
+                    row.appendChild(progressContainer);
+                    
+                    const percent = document.createElement('span');
+                    percent.className = 'indiv-percent-label';
+                    percent.textContent = isEnabled ? prob.toFixed(2) + '%' : '- %';
+                    row.appendChild(percent);
+                    
+                    block.appendChild(row);
+                }
+                
+                content.appendChild(block);
+            });
+            
+            details.appendChild(content);
+            indivContainer.appendChild(details);
         }
     }
 }
@@ -2547,9 +2732,9 @@ function saveHistoryLog() {
     }
 
     // 現在の機種名取得
-    let modelName = 'カスタム';
+    let modelName = 'デフォルト';
     if (currentModelKey.startsWith('user-preset-')) {
-        modelName = userPresets[currentModelKey]?.name || 'ユーザーカスタム';
+        modelName = userPresets[currentModelKey]?.name || 'ユーザーデフォルト';
     }
 
     // 全状態タブの総ゲーム数の合算値
@@ -3230,5 +3415,286 @@ function insertElement(dragging, target) {
     } else {
         // targetはdraggingより前にあるため、targetの前に挿入
         parent.insertBefore(dragging, target);
+    }
+}
+
+// --- バックアップ（エクスポート）と復元（インポート）の処理 ---
+
+// 現在の全データ（LocalStorageとIndexedDBの画像）をJSONファイルとして書き出す
+function exportBackup() {
+    // 1. LocalStorageから「bright_counter_」から始まるキーのデータを抽出
+    const backupData = {
+        version: "1.0",
+        timestamp: Date.now(),
+        localStorage: {},
+        indexedDB: {
+            images: []
+        }
+    };
+
+    const keys = [
+        'bright_counter_model_key',
+        'bright_counter_user_presets',
+        'bright_counter_modes_v4',
+        'bright_counter_active_mode_id',
+        'bright_counter_enabled_settings',
+        'bright_counter_history_logs',
+        'bright_counter_shop_list',
+        'bright_counter_model_memos',
+        'bright_counter_theme',
+        'bright_counter_vibrate_active'
+    ];
+
+    keys.forEach(key => {
+        const val = localStorage.getItem(key);
+        if (val !== null) {
+            backupData.localStorage[key] = val;
+        }
+    });
+
+    // 旧バージョンのマイグレーション用データももし残っていれば取得
+    const legacyKeys = [
+        'bright_counter_current_games',
+        'bright_counter_start_games',
+        'bright_counter_total_games',
+        'bright_counter_v2_list'
+    ];
+    legacyKeys.forEach(key => {
+        const val = localStorage.getItem(key);
+        if (val !== null) {
+            backupData.localStorage[key] = val;
+        }
+    });
+
+    // 2. IndexedDBから画像データを全取得（非同期）
+    if (!db) {
+        // IndexedDBがまだ初期化されていない場合はLocalStorageのみでエクスポート
+        downloadJSON(backupData);
+        return;
+    }
+
+    try {
+        const transaction = db.transaction(["images"], "readonly");
+        const store = transaction.objectStore("images");
+        const request = store.getAll();
+
+        request.onsuccess = function(e) {
+            const list = e.target.result || [];
+            // エクスポート用のデータ構造に整形（自動増分のidは復元時に競合しないよう除外するか、あるいはそのままでインポート時に新規追加する）
+            backupData.indexedDB.images = list.map(item => ({
+                modelKey: item.modelKey,
+                dataUrl: item.dataUrl,
+                memo: item.memo || "",
+                timestamp: item.timestamp || Date.now()
+            }));
+            downloadJSON(backupData);
+        };
+
+        request.onerror = function() {
+            console.error("バックアップ用の画像データ取得に失敗しました。");
+            // 画像データ取得に失敗してもLocalStorageのデータだけで書き出しを行う
+            downloadJSON(backupData);
+        };
+    } catch (e) {
+        console.error("IndexedDB読み込みエラー:", e);
+        downloadJSON(backupData);
+    }
+}
+
+// JSONオブジェクトをファイルとしてダウンロード
+function downloadJSON(data) {
+    try {
+        const jsonString = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        // ファイル名に日付を付与 (x_counter_backup_YYYYMMDD_HHMMSS.json)
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const sec = String(now.getSeconds()).padStart(2, '0');
+        const filename = `x_counter_backup_${yyyy}${mm}${dd}_${hh}${min}${sec}.json`;
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        alert("バックアップファイルの生成に失敗しました。");
+        console.error(e);
+    }
+}
+
+// 非表示のファイル選択要素をクリック
+function triggerRestoreSelect() {
+    const fileInput = document.getElementById("backup-file-input");
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
+// 選択されたバックアップファイルからデータを復元する
+function importBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // input要素の選択値をリセットして、同じファイルを再度選んだ際にもイベントが発火するようにする
+    event.target.value = "";
+
+    if (!confirm("バックアップデータを復元しますか？\n復元を実行すると、現在のすべてのカウンターデータ、設定、メモ、画像履歴が完全に上書きされ、消去されます。よろしいですか？")) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (!data || !data.localStorage) {
+                throw new Error("無効なバックアップファイル形式です。");
+            }
+
+            // 1. LocalStorageの既存データを消去・上書き
+            // 既存のbright_counter_キーを削除
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith("bright_counter_")) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+
+            // バックアップから書き込み
+            for (const key in data.localStorage) {
+                localStorage.setItem(key, data.localStorage[key]);
+            }
+
+            // 2. IndexedDB (画像) の復元
+            if (db && data.indexedDB && Array.isArray(data.indexedDB.images)) {
+                restoreIndexedDBImages(data.indexedDB.images);
+            } else {
+                // 画像データがない、またはIndexedDBが使えない場合はリロードして完了
+                alert("バックアップデータの復元が完了しました。");
+                window.location.reload();
+            }
+
+        } catch (err) {
+            alert("復元に失敗しました。ファイルが破損しているか、無効なファイル形式です。\nエラー詳細: " + err.message);
+            console.error(err);
+        }
+    };
+    reader.readAsText(file);
+}
+
+// IndexedDBの画像をすべて削除したのち、バックアップデータを再登録する
+function restoreIndexedDBImages(imagesList) {
+    try {
+        const transaction = db.transaction(["images"], "readwrite");
+        const store = transaction.objectStore("images");
+        
+        // 全クリア
+        const clearRequest = store.clear();
+        
+        clearRequest.onsuccess = function() {
+            if (imagesList.length === 0) {
+                alert("バックアップデータ（画像なし）の復元が完了しました。");
+                window.location.reload();
+                return;
+            }
+
+            let insertedCount = 0;
+            let hasError = false;
+
+            // 1件ずつ追加
+            imagesList.forEach(img => {
+                // idは自動採番させるため、安全に除外して登録
+                const newItem = {
+                    modelKey: img.modelKey,
+                    dataUrl: img.dataUrl,
+                    memo: img.memo || "",
+                    timestamp: img.timestamp || Date.now()
+                };
+                
+                const addReq = store.add(newItem);
+                addReq.onsuccess = function() {
+                    insertedCount++;
+                    if (insertedCount === imagesList.length) {
+                        alert("バックアップデータ（画像含む）の復元が完了しました。");
+                        window.location.reload();
+                    }
+                };
+                addReq.onerror = function() {
+                    hasError = true;
+                    insertedCount++;
+                    if (insertedCount === imagesList.length) {
+                        alert("一部の画像の復元に失敗しましたが、その他データの復元は完了しました。");
+                        window.location.reload();
+                    }
+                };
+            });
+        };
+
+        clearRequest.onerror = function() {
+            alert("画像データベースの初期化に失敗したため、画像の復元はスキップされましたが、テキストデータは復元されました。");
+            window.location.reload();
+        };
+
+    } catch (e) {
+        console.error("IndexedDB復元エラー:", e);
+        alert("画像の復元中にエラーが発生しましたが、テキストデータの復元は完了しました。");
+        window.location.reload();
+    }
+}
+
+// --- 設定差テーブルの数値をすべてクリア（0に）する処理 ---
+function clearModelTableDenominators() {
+    if (confirm('警告：設定差（出現率分母）のすべての数値をクリアして空欄にします。\nこの操作は元に戻せません。よろしいですか？')) {
+        counters.forEach(c => {
+            if (c.denominators) {
+                c.denominators = [0, 0, 0, 0, 0, 0];
+            }
+        });
+        
+        // 全遊技状態（モードタブ）の小役データも同様にクリアして同期
+        modes.forEach(m => {
+            m.counters.forEach(mc => {
+                if (mc.denominators) {
+                    mc.denominators = [0, 0, 0, 0, 0, 0];
+                }
+            });
+        });
+
+        saveCurrentModeState();
+        saveData();
+        generateModelTable();
+        updateUI();
+        alert('設定差の数値をクリアしました。');
+    }
+}
+
+// --- すべての状態の小役カウントを一括で0にクリアする処理 ---
+function clearAllCountersCount() {
+    if (confirm('警告：登録されているすべての状態（タブ）の小役カウント（ゲーム数以外）を0にクリアします。よろしいですか？')) {
+        modes.forEach(m => {
+            m.counters.forEach(c => {
+                c.count = 0;
+                c.manualRate = 0;
+            });
+        });
+
+        saveCurrentModeState();
+        saveData();
+        
+        syncCombinedCounts();
+        renderCounters();
+        updateUI();
+        alert('小役カウントをクリアしました。');
     }
 }

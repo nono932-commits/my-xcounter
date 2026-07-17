@@ -443,6 +443,14 @@ body.decrement-mode-active {
     box-shadow: 0 0 6px rgba(244, 67, 54, 0.3);
 }
 
+/* カウントクリアボタンのホバー（オレンジっぽく光る効果） */
+.quick-action-btn.clear:hover {
+    background: rgba(255, 152, 0, 0.1);
+    border-color: #FF9800;
+    color: #FF9800;
+    box-shadow: 0 0 6px rgba(255, 152, 0, 0.3);
+}
+
 /* ボタン編集トグルボタン */
 .edit-mode-toggle-btn {
     background: var(--card-bg);
@@ -1040,14 +1048,15 @@ body.decrement-mode-active {
 footer {
     display: flex;
     justify-content: center;
+    gap: 6px;
     margin-top: 8px;
 }
 
-.reset-btn {
+.reset-btn, .backup-btn, .restore-btn {
     background: white;
     border: 1px solid rgba(0,0,0,0.08);
     border-radius: 12px;
-    padding: 10px 20px;
+    padding: 8px 14px;
     font-family: inherit;
     font-weight: 700;
     font-size: 12px;
@@ -1066,8 +1075,202 @@ footer {
     border-color: rgba(229, 57, 53, 0.15);
 }
 
-.reset-btn:active {
+.backup-btn:hover {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border-color: rgba(46, 125, 50, 0.15);
+}
+
+.restore-btn:hover {
+    background: #E8EAF6;
+    color: #3F51B5;
+    border-color: rgba(63, 81, 181, 0.15);
+}
+
+.reset-btn:active, .backup-btn:active, .restore-btn:active {
     transform: scale(0.98);
+}
+
+/* ダークテーマ用フッターボタン */
+.dark-theme .reset-btn,
+.dark-theme .backup-btn,
+.dark-theme .restore-btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-main) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-theme .reset-btn:hover {
+    background: rgba(229, 57, 53, 0.1) !important;
+    color: #FF5252 !important;
+    border-color: rgba(229, 57, 53, 0.2) !important;
+}
+
+.dark-theme .backup-btn:hover {
+    background: rgba(76, 175, 80, 0.1) !important;
+    color: #8BC34A !important;
+    border-color: rgba(76, 175, 80, 0.2) !important;
+}
+
+.dark-theme .restore-btn:hover {
+    background: rgba(63, 81, 181, 0.1) !important;
+    color: #5C6BC0 !important;
+    border-color: rgba(63, 81, 181, 0.2) !important;
+}
+
+/* --- 小役別設定推測 --- */
+.individual-estimations-container {
+    margin-top: 6px;
+}
+
+.indiv-est-details {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+    font-size: 10px;
+}
+
+.dark-theme .indiv-est-details {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.03);
+}
+
+.indiv-est-summary {
+    padding: 8px 10px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    user-select: none;
+    outline: none;
+    color: var(--text-main);
+    border-left: 3px solid #E65100;
+}
+
+.indiv-est-summary::-webkit-details-marker {
+    display: none;
+}
+
+.indiv-est-summary::before {
+    content: '▶';
+    font-size: 8px;
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.indiv-est-details[open] .indiv-est-summary::before {
+    content: '▼';
+}
+
+.indiv-est-content {
+    padding: 8px 6px;
+    border-top: 1px solid rgba(0, 0, 0, 0.02);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px 4px;
+}
+
+.dark-theme .indiv-est-content {
+    border-top-color: rgba(255, 255, 255, 0.03);
+}
+
+@media (max-width: 420px) {
+    .indiv-est-content {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.indiv-est-block {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    padding: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.02);
+    min-width: 0;
+}
+
+.dark-theme .indiv-est-block {
+    background: rgba(255, 255, 255, 0.01);
+    border-color: rgba(255, 255, 255, 0.02);
+}
+
+.indiv-est-block-title {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-main);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    padding-bottom: 2px;
+}
+
+.dark-theme .indiv-est-block-title {
+    border-bottom-color: rgba(255, 255, 255, 0.03);
+}
+
+.indiv-result-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 12px;
+    font-size: 8px;
+}
+
+.indiv-setting-label {
+    min-width: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.indiv-progress-container {
+    flex-grow: 1;
+    height: 5px;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 2.5px;
+    margin: 0 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.dark-theme .indiv-progress-container {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.indiv-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(230, 81, 0, 0.4);
+    border-radius: 2.5px;
+    transition: width 0.3s ease;
+}
+
+.indiv-result-row.highlight .indiv-progress-bar {
+    background: #E65100;
+}
+
+.indiv-percent-label {
+    min-width: 24px;
+    text-align: right;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    font-size: 8px;
+}
+
+.indiv-result-row.is-disabled {
+    opacity: 0.15;
 }
 
 /* --- 設定推測セクション --- */
@@ -1085,8 +1288,9 @@ footer {
 
 .estimation-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
+    gap: 12px;
 }
 
 .estimation-header h2 {
@@ -1113,6 +1317,11 @@ footer {
     outline: none;
     cursor: pointer;
     transition: var(--transition);
+    max-width: 210px;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .model-select-wrapper select:focus {
@@ -1122,16 +1331,16 @@ footer {
 .preset-action-btn {
     border: 1px solid rgba(0, 0, 0, 0.08);
     background: white;
-    border-radius: 8px;
-    width: 29px;
+    border-radius: 6px;
     height: 29px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 10px;
+    font-weight: 700;
     transition: var(--transition);
-    padding: 0;
+    padding: 0 8px;
 }
 
 .preset-action-btn:hover {
@@ -1165,16 +1374,16 @@ footer {
 .estimation-results {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 3px;
 }
 
 .result-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 4px;
+    padding: 2px 4px;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: 6px;
     transition: var(--transition);
 }
 
@@ -1186,7 +1395,7 @@ footer {
 .setting-label {
     width: 45px;
     font-family: 'Outfit', sans-serif;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 800;
     color: var(--text-main);
 }
@@ -1197,16 +1406,16 @@ footer {
 
 .progress-bar-container {
     flex: 1;
-    height: 12px;
+    height: 8px;
     background: rgba(0, 0, 0, 0.04);
-    border-radius: 6px;
+    border-radius: 4px;
     overflow: hidden;
 }
 
 .progress-bar {
     height: 100%;
     width: 0;
-    border-radius: 6px;
+    border-radius: 4px;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1224,7 +1433,7 @@ footer {
 .percent-label {
     width: 50px;
     font-family: 'Outfit', sans-serif;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 800;
     text-align: right;
     color: var(--text-main);
@@ -1758,63 +1967,116 @@ footer {
     width: 100%;
 }
 
-/* 確率入力用のラッパー自体を入力枠（インプットデコレーター）にする */
+.table-denom-input-wrapper,
 .table-rate-input-wrapper {
     display: inline-flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 4px;
     background: var(--bg-card);
-    padding: 0 4px 0 0;
+    padding: 0;
     box-sizing: border-box;
-    width: 54px; /* 入力枠全体の幅 */
-    height: 22px; /* 入力枠の高さ */
+    width: 72px;
+    height: 22px;
     transition: border-color 0.2s, background-color 0.2s;
+    position: relative;
 }
 
+.dark-theme .table-denom-input-wrapper,
 .dark-theme .table-rate-input-wrapper {
     border-color: rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.03);
 }
 
+.table-denom-input-wrapper:focus-within,
 .table-rate-input-wrapper:focus-within {
     border-color: var(--digital-glow-orange) !important;
     background: #FFFDE7 !important;
 }
 
+.dark-theme .table-denom-input-wrapper:focus-within,
 .dark-theme .table-rate-input-wrapper:focus-within {
     background: rgba(255, 111, 0, 0.08) !important;
 }
 
-/* ラッパーの中の確率入力インプットは枠線と背景を消す */
+.table-denom-input-wrapper input,
 .table-rate-input-wrapper input {
     border: none !important;
     background: transparent !important;
     outline: none !important;
     width: 100% !important;
     height: 100% !important;
-    padding: 3px 0 3px 4px !important;
-    text-align: right !important; /* 右寄せにして%とくっつける */
+    box-sizing: border-box !important;
+    padding: 3px 12px 3px 12px !important;
+    text-align: center !important;
     box-shadow: none !important;
+    font-size: 11px !important;
 }
 
 .table-unit {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
     font-size: 8px;
     font-weight: 800;
     color: var(--text-muted);
     user-select: none;
+    pointer-events: none;
 }
 
-/* テーブル内の分母数値入力の幅広調整（確率入力枠のサイズと完全に一致させる） */
-.model-table td .table-denom-input-wrapper input {
-    width: 54px !important;
-    height: 22px !important;
-    box-sizing: border-box !important;
-    padding: 3px 4px !important;
-    text-align: center !important;
+.table-denom-input-wrapper .table-unit {
+    left: 4px;
 }
 
+.table-rate-input-wrapper .table-unit {
+    right: 4px;
+}
+
+.dark-theme .preset-action-btn {
+    background: var(--bg-card);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+.table-header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 8px;
+}
+
+.table-clear-btn {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: white;
+    border-radius: 6px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+    transition: var(--transition);
+    padding: 0 8px;
+    color: #C62828;
+    flex-shrink: 0;
+}
+
+.table-clear-btn:hover {
+    background: #FFEBEE;
+    border-color: #E57373;
+}
+
+.dark-theme .table-clear-btn {
+    background: var(--bg-card);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #FF5252;
+}
+
+.dark-theme .table-clear-btn:hover {
+    background: rgba(255, 82, 82, 0.15);
+}
 /* --- 使用設定コントロール（チェックボックス行） --- */
 .active-settings-control {
     display: flex;
@@ -2758,6 +3020,29 @@ footer {
 
 /* --- スマートフォン用レスポンシブスタイル --- */
 @media (max-width: 480px) {
+    .estimation-header {
+        gap: 6px;
+    }
+    
+    .model-select-wrapper select {
+        max-width: 170px !important;
+        padding: 4px 6px !important;
+        font-size: 11px !important;
+        text-align: left !important;
+    }
+    
+    .model-select-wrapper .preset-action-btn {
+        height: 24px !important;
+        padding: 0 4px !important;
+        font-size: 9px !important;
+    }
+    
+    .table-clear-btn {
+        height: 20px !important;
+        padding: 0 4px !important;
+        font-size: 8.5px !important;
+        border-radius: 4px !important;
+    }
     body {
         padding: 4px 6px;
     }
@@ -2957,78 +3242,67 @@ footer {
     }
 
     /* 設定差テーブルの入力枠と親ラッパーの極小化 */
-    .model-table td div.table-denom-input-wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1px !important;
-        width: 100%;
-    }
-
-    /* スマホ表示時の確率入力用ラッパー（疑似入力枠） */
+    /* スマホ表示時の設定差テーブル入力用ラッパー */
+    .model-table td div.table-denom-input-wrapper,
     .model-table td div.table-rate-input-wrapper {
         display: inline-flex !important;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: center !important;
         border: 1px solid rgba(0, 0, 0, 0.08) !important;
         border-radius: 3px !important;
         background: var(--bg-card) !important;
-        padding: 0 2px 0 0 !important;
+        padding: 0 !important;
         box-sizing: border-box;
-        width: 100% !important;
-        min-width: 40px !important;
-        max-width: 48px !important;
+        width: 72px !important;
+        min-width: 72px !important;
+        max-width: 72px !important;
         height: 20px !important;
+        position: relative !important;
     }
 
+    .dark-theme .model-table td div.table-denom-input-wrapper,
     .dark-theme .model-table td div.table-rate-input-wrapper {
         border-color: rgba(255, 255, 255, 0.1) !important;
         background: rgba(255, 255, 255, 0.03) !important;
     }
 
-    /* 確率入力インプットは枠線を消してラッパー内に透過配置 */
+    /* 確率・分母入力インプットは枠線を消してラッパー内に透過配置（中央寄せ） */
+    .model-table td div.table-denom-input-wrapper input,
     .model-table td div.table-rate-input-wrapper input {
         border: none !important;
         background: transparent !important;
         outline: none !important;
         width: 100% !important;
         height: 100% !important;
-        padding: 2px 0 2px 2px !important;
-        text-align: right !important; /* %と密着させるため右寄せ */
+        padding: 2px 10px 2px 10px !important;
+        text-align: center !important;
         box-shadow: none !important;
+        font-size: 10px !important;
     }
 
-    /* スマホ時は分母の「1/」単位表示を非表示にして横幅を節約 */
+    /* スマホ用の「1/」単位表示（左端） */
     .model-table td div.table-denom-input-wrapper span.table-unit {
-        display: none !important;
+        display: inline !important;
+        font-size: 8px !important;
+        color: var(--text-muted);
+        position: absolute !important;
+        left: 3px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        margin-left: 0px !important;
     }
 
-    /* スマホ時でも確率の「%」は入力枠の中にしっかりと表記する */
+    /* スマホ用の「%」単位表示（右端） */
     .model-table td div.table-rate-input-wrapper span.table-unit {
         display: inline !important;
         font-size: 8px !important;
         color: var(--text-muted);
+        position: absolute !important;
+        right: 3px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
         margin-left: 0px !important;
     }
-
-    /* スマホ用の通常の分母入力枠スタイル（確率入力枠のサイズと完全に一致させる） */
-    .model-table td div.table-denom-input-wrapper input {
-        width: 100% !important;
-        min-width: 40px !important;
-        max-width: 48px !important;
-        padding: 2px 1px !important;
-        font-size: 10px !important;
-        border: 1px solid rgba(0, 0, 0, 0.08) !important;
-        border-radius: 3px !important;
-        text-align: center !important;
-        height: 20px !important;
-        background: var(--bg-card);
-        box-sizing: border-box !important;
-    }
-    
-    .dark-theme .model-table td div.table-denom-input-wrapper input {
-        border-color: rgba(255, 255, 255, 0.1) !important;
-        background: rgba(255, 255, 255, 0.03);
     }
 
     /* スマホ表示時、実践履歴エリアの余白をカード内にきれいに収める */
